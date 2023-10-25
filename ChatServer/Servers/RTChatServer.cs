@@ -14,13 +14,29 @@ internal class RTChatServer
 
     protected internal void RemoveConnection(string? userName)
     {
-        ChatClient? client = _clients.Find(c => c.UserName == userName);
 
-        if (client != null)
-            _clients.Remove(client);
+        if (_clients.Count > 0)
+        {
+            if (_clients != null)
+            {
+                ChatClient? client = _clients.Find(c => c.UserName == userName);
 
-        Console.WriteLine($"Количество подключенных пользователей: {_clients.Count}. " +
-            $"Пользователь под ником {client?.UserName} отключен.");
+                if (client != null)
+                {
+                    _clients.Remove(client);
+
+
+                    Console.WriteLine($"Количество подключенных пользователей: {_clients.Count}. " +
+                        $"Пользователь под ником {client?.UserName} отключен.");
+                }
+            }
+                
+
+        }
+
+        
+
+       
 
     }
 
