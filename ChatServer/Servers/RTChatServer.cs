@@ -20,7 +20,7 @@ internal class RTChatServer
             _clients.Remove(client);
 
         Console.WriteLine($"Количество подключенных пользователей: {_clients.Count}. " +
-            $"Пользователь под ником {client.UserName} отключен.");
+            $"Пользователь под ником {client?.UserName} отключен.");
 
     }
 
