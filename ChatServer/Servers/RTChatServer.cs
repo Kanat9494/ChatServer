@@ -2,18 +2,26 @@
 
 internal class RTChatServer
 {
-    static TcpListener _tcpListener;
+    static TcpListener? _tcpListener;
     List<ChatClient> _clients = new List<ChatClient>();
 
     protected internal void AddConnection(ChatClient client)
-        => _clients.Add(client);
-
-    protected internal void RemoveConnection(Guid clientId)
     {
-        ChatClient client = _clients.FirstOrDefault(c => c.ClientId == clientId);
+        _clients.Add(client);
+        Console.WriteLine($"Количество подключенных пользователей: {_clients.Count}. " +
+            $"Подключен пользователь под логином: {client.UserName}");
+    }
+
+    protected internal void RemoveConnection(string? userName)
+    {
+        ChatClient? client = _clients.Find(c => c.UserName == userName);
 
         if (client != null)
             _clients.Remove(client);
+
+        Console.WriteLine($"Количество подключенных пользователей: {_clients.Count}. " +
+            $"Пользователь под ником {client.UserName} отключен.");
+
     }
 
     protected internal void Listen()
@@ -43,33 +51,42 @@ internal class RTChatServer
         }
     }
 
-    protected internal void BroadcastMessage(string jsonMessage, Guid clientId)
+    protected internal async Task BroadcastMessage(string jsonMessage)
     {
-        var message = JsonSerializer.Deserialize<Message>(jsonMessage);
-        byte[] data = Encoding.UTF8.GetBytes(message?.Content + _clients.Count ?? "Тело сообщения пустое");
-
-        for (int i = 0; i < _clients.Count; i++)
+        try
         {
-            //if (_clients[i].ClientId == clientId)
-            //    _clients[i].Stream.Write(data, 0, data.Length);
+            var message = JsonSerializer.Deserialize<Message>(jsonMessage);
+            byte[] data = Encoding.UTF8.GetBytes(message?.Content + _clients.Count ?? "Тело сообщения пустое");
 
-            _clients[i].Stream.Write(data, 0, data.Length);
+            for (int i = 0; i < _clients.Count; i++)
+            {
+                //if (_clients[i].ClientId == clientId)
+                //    _clients[i].Stream.Write(data, 0, data.Length);
+
+                await _clients[i].Stream.WriteAsync(data, 0, data.Length);
+            }
         }
+        catch { }
     }
 
-    protected internal void SendMessageToUser(string jsonMessage, Guid clientId)
+    protected internal async Task SendMessageToUser(string jsonMessage)
     {
-        var message = JsonSerializer.Deserialize<Message>(jsonMessage);
-        byte[] data = Encoding.UTF8.GetBytes(message?.Content ?? "Тело сообщения пустое");
+        try
+        {
+            var message = JsonSerializer.Deserialize<Message>(jsonMessage);
+            byte[] data = Encoding.UTF8.GetBytes(message?.Content ?? "Тело сообщения пустое");
 
-        var client = _clients.FirstOrDefault(c => c.ClientId == clientId);
+            var client = _clients.Find(c => c.UserName == message?.ReceiverName);
 
-        client?.Stream.Write(data, 0, data.Length);
+            if (client != null)
+                await client?.Stream.WriteAsync(data, 0, data.Length);
+        }
+        catch { }
     }
 
     protected internal void Disconnect()
     {
-        _tcpListener.Stop();
+        _tcpListener?.Stop();
 
         for (int i = 0; i < _clients.Count; i++)
             _clients[i].Close();

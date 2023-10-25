@@ -4,17 +4,13 @@ internal class ChatClient
 {
     internal ChatClient(TcpClient tcpClient, RTChatServer server)
     {
-        ClientId = Guid.NewGuid();
         _tcpClient = tcpClient;
         _server = server;
-        _server.AddConnection(this);
     }
 
-    protected internal Guid ClientId { get; private set; }
     protected internal NetworkStream Stream { get; private set; }
-    string _userName;
-    protected internal string UserName { get; set; }
-    protected internal string ReceiverName { get; set; }
+    protected internal string? UserName { get; set; }
+    protected internal string? ReceiverName { get; set; }
     TcpClient _tcpClient;
     RTChatServer _server;
 
@@ -28,20 +24,22 @@ internal class ChatClient
             Stream = _tcpClient.GetStream();
             string jsonMessage = await GetMessageAsync();
             var message = JsonSerializer.Deserialize<Message>(jsonMessage);
-            _userName = message.SenderName;
-            UserName = message.SenderName;
-            ReceiverName = message.ReceiverName;
+            UserName = message?.SenderName;
+            ReceiverName = message?.ReceiverName;
 
             message = new Message
             {
-                SenderName = _userName,
-                Content = _userName + " вошел в чат",
+                SenderName = UserName ?? "",
+                Content = "",
                 ReceiverName = ReceiverName,
             };
 
+            _server.AddConnection(this);
+
+
             var sendingMessage = JsonSerializer.Serialize(message);
             //_server.BroadcastMessage(sendingMessage, this.ClientId);
-            Console.WriteLine(message.Content + "\nА получатель должен быть " + ReceiverName);
+            //Console.WriteLine(message.Content + "\nА получатель должен быть " + ReceiverName);
 
 
             while (true)
@@ -50,9 +48,9 @@ internal class ChatClient
                 {
                     jsonMessage = await GetMessageAsync();
                     message = JsonSerializer.Deserialize<Message>(jsonMessage);
-                    //_server.BroadcastMessage(jsonMessage, this.ClientId);
+                    //await _server.BroadcastMessage(jsonMessage);
 
-                    _server.SendMessageToUser(jsonMessage, this.ClientId);
+                    await _server.SendMessageToUser(jsonMessage);
                 }
                 catch
                 {
@@ -67,7 +65,7 @@ internal class ChatClient
         }
         finally
         {
-            _server.RemoveConnection(ClientId);
+            _server.RemoveConnection(UserName);
             Close();
         }
     }

@@ -1,7 +1,7 @@
 ﻿class Program
 {
-    static RTChatServer _server;
-    static Thread _listenThread;
+    static RTChatServer? _server;
+    static Thread? _listenThread;
 
     static void Main(string[] args)
     {
@@ -13,7 +13,7 @@
         }
         catch (Exception ex)
         {
-            _server.Disconnect();
+            _server?.Disconnect();
             Console.WriteLine($"Сервер остановлен. Причина: {ex.Message}");
         }
     }
