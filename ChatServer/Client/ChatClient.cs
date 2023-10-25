@@ -50,7 +50,9 @@ internal class ChatClient
                 {
                     jsonMessage = await GetMessageAsync();
                     message = JsonSerializer.Deserialize<Message>(jsonMessage);
-                    _server.BroadcastMessage(jsonMessage, this.ClientId);
+                    //_server.BroadcastMessage(jsonMessage, this.ClientId);
+
+                    _server.SendMessageToUser(jsonMessage, this.ClientId);
                 }
                 catch
                 {
