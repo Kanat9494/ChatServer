@@ -9,8 +9,8 @@ internal class ChatClient
     }
 
     protected internal NetworkStream Stream { get; private set; }
-    protected internal int UserName { get; set; }
-    protected internal int ReceiverName { get; set; }
+    protected internal int UserId { get; set; }
+    protected internal int ReceiverId { get; set; }
     TcpClient _tcpClient;
     RTChatServer _server;
 
@@ -24,14 +24,14 @@ internal class ChatClient
             Stream = _tcpClient.GetStream();
             string jsonMessage = await GetMessageAsync();
             var message = JsonSerializer.Deserialize<Message>(jsonMessage);
-            UserName = message?.SenderName ?? 1;
-            ReceiverName = message?.ReceiverName ?? 2;
+            UserId = message?.SenderId ?? 1;
+            ReceiverId = message?.ReceiverId ?? 2;
 
             message = new Message
             {
-                SenderName = UserName,
+                SenderId = UserId,
                 Content = "",
-                ReceiverName = ReceiverName,
+                ReceiverId = ReceiverId,
             };
 
             _server.AddConnection(this);
@@ -65,7 +65,7 @@ internal class ChatClient
         }
         finally
         {
-            _server.RemoveConnection(UserName);
+            _server.RemoveConnection(UserId);
             Close();
         }
     }

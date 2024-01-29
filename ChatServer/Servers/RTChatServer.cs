@@ -9,17 +9,17 @@ internal class RTChatServer
     {
         _clients.Add(client);
         Console.WriteLine($"Количество подключенных пользователей: {_clients.Count}. " +
-            $"Подключен пользователь под логином: {client.UserName}");
+            $"Подключен пользователь с userId: {client.UserId}");
     }
 
-    protected internal void RemoveConnection(int userName)
+    protected internal void RemoveConnection(int userId)
     {
 
         if (_clients.Count > 0)
         {
             if (_clients != null)
             {
-                ChatClient? client = _clients.Find(c => c.UserName == userName);
+                ChatClient? client = _clients.Find(c => c.UserId == userId);
 
                 if (client != null)
                 {
@@ -27,7 +27,7 @@ internal class RTChatServer
 
 
                     Console.WriteLine($"Количество подключенных пользователей: {_clients.Count}. " +
-                        $"Пользователь под ником {client?.UserName} отключен.");
+                        $"Пользователь с userId {client?.UserId} отключен.");
                 }
             }
                 
@@ -90,9 +90,9 @@ internal class RTChatServer
         try
         {
             var message = JsonSerializer.Deserialize<Message>(jsonMessage);
-            byte[] data = Encoding.UTF8.GetBytes(message?.Content ?? "Тело сообщения пустое");
+            byte[] data = Encoding.UTF8.GetBytes(jsonMessage?.ToString() ?? "Тело сообщения пустое");
 
-            var client = _clients.Find(c => c.UserName == message?.ReceiverName);
+            var client = _clients.Find(c => c.UserId == message?.ReceiverId);
 
             if (client != null)
                 await client?.Stream.WriteAsync(data, 0, data.Length);
