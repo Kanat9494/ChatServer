@@ -12,7 +12,7 @@ internal class RTChatServer
             $"Подключен пользователь под логином: {client.UserName}");
     }
 
-    protected internal void RemoveConnection(string? userName)
+    protected internal void RemoveConnection(int userName)
     {
 
         if (_clients.Count > 0)

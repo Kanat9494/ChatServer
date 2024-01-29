@@ -2,7 +2,7 @@
 
 public class Message
 {
-    public string SenderName { get; set; }
-    public string? ReceiverName { get; set; }
+    public int SenderName { get; set; }
+    public int ReceiverName { get; set; }
     public string Content { get; set; }
 }
