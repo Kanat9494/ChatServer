@@ -92,10 +92,18 @@ internal class RTChatServer
             var message = JsonSerializer.Deserialize<Message>(jsonMessage);
             byte[] data = Encoding.UTF8.GetBytes(jsonMessage?.ToString() ?? "Тело сообщения пустое");
 
-            var client = _clients.Find(c => c.UserId == message?.ReceiverId);
+            //var client = _clients.Find(c => c.UserId == message?.ReceiverId);
 
-            if (client != null)
-                await client?.Stream.WriteAsync(data, 0, data.Length);
+            //if (client != null)
+            //    await client?.Stream.WriteAsync(data, 0, data.Length);
+
+            //Для клиентов, которые вошли с разных телефонов или 1 клиент открыл много подключений
+            var clients = _clients.Where(c => c.UserId == message?.ReceiverId).ToList();
+            if (clients != null)
+            {
+                for (int i = 0; i < clients.Count; i++)
+                    await clients[i].Stream.WriteAsync(data, 0, data.Length);
+            }
         }
         catch { }
     }
